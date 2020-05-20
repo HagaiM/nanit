@@ -1,5 +1,6 @@
 import pandas as pd
 from mysql_client import df_to_mysql_bulk,mysql_query_to_df
+from postgres_client import df_to_postgresql_bulk,postgresql_to_df
 from datetime import datetime
 datetime.now(tz=None)
 
@@ -238,9 +239,9 @@ def fact_orders_stg_to_dwh():
     unify_df = unify_df.merge(dwh_dim_order_source, indicator=True, how='left', on=['orderSource'])
     unify_df.rename(columns={'_merge': 'action_type'}, inplace=True)
     unify_df = unify_df.drop(columns=['action_type','orderSource','insert_time'])
-    unify_df = unify_df.merge(dwh_dim_product, indicator=True, how='left', on=['productCode'])
+    unify_df = unify_df.merge(dwh_dim_product, indicator=True, how='left', on=['productCode','productDescription'])
     unify_df.rename(columns={'_merge': 'action_type'}, inplace=True)
-    unify_df = unify_df.drop(columns=['action_type','productCode', 'productDescription_y','productDescription_x','insert_time'])
+    unify_df = unify_df.drop(columns=['action_type','productCode', 'productDescription','insert_time'])
     unify_df["insert_time"] = dateTimeObj
     df_to_mysql_bulk(unify_df, 'dwh_fact_order', host, user, passwd, db, type='append')
 
